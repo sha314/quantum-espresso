@@ -1,0 +1,31 @@
+&CONTROL
+    calculation = 'scf'       ! Type of calculation (scf, relax, nscf, etc.)
+    prefix = 'silicon'        ! Prefix for output files
+    outdir = './tmp'          ! Directory for temporary files
+    pseudo_dir = './pseudo'   ! Directory containing pseudopotentials
+    verbosity = 'high'        ! Output detail level
+/
+&SYSTEM
+    ibrav = 2                 ! Bravais lattice type (2 = FCC)
+    celldm(1) = 10.21         ! Lattice parameter in Bohr
+    nat = 2                   ! Number of atoms in unit cell
+    ntyp = 1                  ! Number of atom types
+    ecutwfc = 30.0            ! Plane-wave cutoff (Ry)
+    ecutrho = 240.0           ! Charge density cutoff (Ry)
+    occupations = 'fixed'     ! Occupations for metals/semiconductors
+/
+&ELECTRONS
+    conv_thr = 1.0d-8         ! Convergence threshold for SCF
+    mixing_beta = 0.7         ! Mixing parameter for SCF
+/
+
+ATOMIC_SPECIES
+ Si  28.086  Si.pbe-n-rrkjus_psl.1.0.0.UPF    ! Element, mass, pseudopotential file
+
+ATOMIC_POSITIONS alat         ! Positions in units of alat (celldm(1))
+ Si 0.00 0.00 0.00            ! First atom (fractional coordinates)
+ Si 0.25 0.25 0.25            ! Second atom
+
+K_POINTS automatic            ! Automatic k-point grid
+ 12 12 12 0 0 0               ! 12x12x12 Monkhorst-Pack grid
+
