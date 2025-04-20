@@ -1,10 +1,28 @@
 # quantum-espresso
 Using Quantum ESPRESSO for DFT calculations. I'll add examples with steps and commands.
 
+
+# Quantum ESPRESSO Binaries and Input Files
+
+| Step                      | Executable  | Input File Example | Purpose                                                                 |
+|---------------------------|-------------|---------------------|-------------------------------------------------------------------------|
+| SCF calculation           | `pw.x`      | `scf.in`            | Self-consistent field (ground-state) calculation                        |
+| NSCF calculation          | `pw.x`      | `nscf.in`           | Non-self-consistent calculation (used for bands, DOS, etc.)             |
+| Band structure post-proc  | `bands.x`   | `bands.pp.in`       | Processes NSCF output to generate band structure data                   |
+| Density of States (DOS)   | `dos.x`     | `dos.in`            | Computes total DOS (requires NSCF output)                               |
+| Projected DOS (PDOS)      | `projwfc.x` | `projwfc.in`        | Computes atomic- and orbital-resolved DOS                               |
+| Charge density plot       | `pp.x`      | `plotrho.in`        | Visualizes charge density, wavefunctions, potentials, etc.              |
+| Phonon calculation        | `ph.x`      | `ph.in`             | Computes phonon dispersion and dynamical matrices (PHonon module)       |
+| Dielectric properties     | `epsilon.x` | `epsilon.in`        | Calculates dielectric and optical properties                            |
+| X-ray spectra             | `xspectra.x`| `xspectra.in`       | Simulates X-ray absorption spectra                                      |
+
+
+
 # Installation
 1. Quantum ESPRESSO (QE)
 2. gnuplot
 3. CIF to  QE input file converter
+
 
 # Preparing the input files
 1. Pseudo potentials are crucial for calculations. There are two ways, you can have them in "./pseudo" folder. Here "." denotes the directory from where you run the commands. And you'd need to have 'pseudo_dir' defined in &CONTROL

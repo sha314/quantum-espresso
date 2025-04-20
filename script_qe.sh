@@ -36,8 +36,6 @@ run_qe() {
 # === WORKFLOW ===
 run_qe scf
 run_qe nscf
-run_qe bands
-run_qe dos
 
 # === POST-PROCESSING ===
 
