@@ -2,7 +2,6 @@
     calculation = 'bands'
     prefix      = 'silicon'
     outdir      = './tmp'
-    pseudo_dir  = './pseudo'
     verbosity = 'high'     ! Increased output detail
 /
 &SYSTEM

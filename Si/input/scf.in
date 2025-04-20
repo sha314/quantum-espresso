@@ -2,7 +2,6 @@
     calculation = 'scf'       ! Type of calculation (scf, relax, nscf, etc.)
     prefix = 'silicon'        ! Prefix for output files
     outdir = './tmp'          ! Directory for temporary files
-    pseudo_dir = './pseudo'   ! Directory containing pseudopotentials
     verbosity = 'high'        ! Output detail level
 /
 &SYSTEM

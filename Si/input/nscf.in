@@ -2,7 +2,6 @@
     calculation   = 'nscf'          ! Non-self-consistent calculation
     prefix        = 'silicon'        ! Must match SCF prefix
     outdir        = './tmp'          ! Directory with SCF output
-    pseudo_dir    = './pseudo'       ! Pseudopotential directory
     verbosity     = 'high'           ! Detailed output
 /
 &SYSTEM
