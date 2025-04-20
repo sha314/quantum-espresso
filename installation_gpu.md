@@ -46,6 +46,9 @@ The make command will build executables in "build/bin/" folder.
 
 
 
+## Step 3B: Quantum ESPRESSO (7.4) with Hybrid ()
+todo
+
 ## Setp 4: Setting up
 
 
@@ -91,7 +94,7 @@ sudo chmod -R a+rx /opt/qe741/
 ```
 
 
-## Environment variables
+### Environment variables
 
 
 ```bat
@@ -102,10 +105,10 @@ source ~/.bashrc
 ```
 
 
-And ~/qe741/pseudo will be the Pseudo potential directory.
+And ~/pseudo will be the Pseudo potential directory (.UPF files).
 
 ```bat
-echo 'export ESPRESSO_PSEUDO=~/qe741/pseudo' >> ~/.bashrc
+echo 'export ESPRESSO_PSEUDO=~/pseudo' >> ~/.bashrc
 source ~/.bashrc
 ```
 No need to use full paths in the input files — QE will search $ESPRESSO_PSEUDO.
@@ -113,7 +116,13 @@ No need to use full paths in the input files — QE will search $ESPRESSO_PSEUDO
 
 
 
+## Step 5. Testing
 
+Use a GPU-aware executable (pw.x must be GPU-enabled).
+```bat
+ldd ./pw.x | grep cuda
+```
+You should see CUDA libraries like libcufft, libcublas, or libcuda
 
 
 

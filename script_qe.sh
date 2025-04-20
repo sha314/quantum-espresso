@@ -36,15 +36,16 @@ run_qe() {
 # === WORKFLOW ===
 run_qe scf
 run_qe nscf
+run_qe bands
 
 # === POST-PROCESSING ===
 
+# After running the bands calculation (bands.in with pw.x), 
+# you use bands.pp.in with bands.x to post-process the data and extract eigenvalues, suitable for plotting.
 echo ">>> Running bands.x ..."
-"$BIN_DIR/bands.x" < "$INPUT_DIR/bands.in" > "$OUTPUT_DIR/bands_post.out"
-
-"$BIN_DIR/bands.x" < "$INPUT_DIR/bands.pp.in" > "$OUTPUT_DIR/bands_post.out"
+mpirun -np $NPROC "$BIN_DIR/bands.x" -in "$INPUT_DIR/bands.pp.in" > "$OUTPUT_DIR/bands_post.out"
 
 echo ">>> Running dos.x ..."
-"$BIN_DIR/dos.x" < "$INPUT_DIR/dos.in" > "$OUTPUT_DIR/dos_post.out"
+mpirun -np $NPROC "$BIN_DIR/dos.x" -in "$INPUT_DIR/dos.in" > "$OUTPUT_DIR/dos_post.out"
 
 echo ">>> All calculations complete!"

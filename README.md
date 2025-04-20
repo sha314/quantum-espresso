@@ -8,6 +8,7 @@ Using Quantum ESPRESSO for DFT calculations. I'll add examples with steps and co
 |---------------------------|-------------|---------------------|-------------------------------------------------------------------------|
 | SCF calculation           | `pw.x`      | `scf.in`            | Self-consistent field (ground-state) calculation                        |
 | NSCF calculation          | `pw.x`      | `nscf.in`           | Non-self-consistent calculation (used for bands, DOS, etc.)             |
+| bands calculation          | `pw.x`      | `bands.in`         |        |
 | Band structure post-proc  | `bands.x`   | `bands.pp.in`       | Processes NSCF output to generate band structure data                   |
 | Density of States (DOS)   | `dos.x`     | `dos.in`            | Computes total DOS (requires NSCF output)                               |
 | Projected DOS (PDOS)      | `projwfc.x` | `projwfc.in`        | Computes atomic- and orbital-resolved DOS                               |

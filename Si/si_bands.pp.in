@@ -1,7 +1,0 @@
-&BANDS
-    prefix   = 'silicon'
-    outdir   = './tmp'
-    filband  = 'si_bands.dat'
-    lsym     = .true.     ! Key for correct k-path normalization
-/
-

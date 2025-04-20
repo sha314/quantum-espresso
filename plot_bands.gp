@@ -24,6 +24,31 @@ set label "E_F" at graph 0.02,0.03 center
 
 
 
+# === OPTIONAL PLOTTING ===
+if command -v gnuplot &> /dev/null; then
+    echo ">>> Plotting Bands ..."
+    gnuplot -persist <<EOF
+set title "Band Structure"
+set xlabel "k-point"
+set ylabel "Energy (eV)"
+plot "${OUTPUT_DIR}/bands.dat.gnu" using 1:2 with lines notitle
+EOF
+
+    echo ">>> Plotting DOS ..."
+    gnuplot -persist <<EOF
+set title "Density of States"
+set xlabel "Energy (eV)"
+set ylabel "DOS"
+plot "${OUTPUT_DIR}/dos.dat" using 1:2 with lines title "DOS"
+EOF
+else
+    echo "Gnuplot not found. Skipping plots."
+fi
+
+
+
+
+
 # High-symmetry points (positions from si_bands.dat.gnu)
 set xtics ("Γ" 0.0, "X" 1.0, "K" 1.5, "Γ" 2.0)
 # Vertical lines at high-symmetry points
