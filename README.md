@@ -43,6 +43,7 @@ I'm choosing the 2nd way since I don't want to upload the pseudo potentials.
 You can download the pseudo potentials from here https://www.materialscloud.org/discover/sssp/table/efficiency . It's a file with ".UPF" extension. For silicon the name is "Si.pbe-n-rrkjus_psl.1.0.0.UPF". I'll not upload the pseudo potentials to github.
 
 
+All input files must have same 'prefix'.
 
 
 
