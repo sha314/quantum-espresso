@@ -1,0 +1,28 @@
+&CONTROL
+    calculation = 'scf'
+    prefix = 'nb_bulk'
+    outdir = './tmp/'
+/
+&SYSTEM
+    ibrav = 3,               ! BCC lattice type
+    celldm(1) = 6.25,        ! This defines the lattice constant (6.25 Bohr ≈ 3.30 Å)
+    nat = 1,
+    ntyp = 1,
+    ecutwfc = 50.0,
+    ecutrho = 400.0,
+    occupations = 'smearing',
+    smearing = 'mv',
+    degauss = 0.02
+/
+&ELECTRONS
+    conv_thr = 1.0d-8,
+    mixing_beta = 0.7
+/
+ATOMIC_SPECIES
+ Nb  92.90638  Nb.pbe-spn-kjpaw_psl.1.0.0.UPF
+
+ATOMIC_POSITIONS {crystal}   ! Crystal coordinates don't need lattice parameter
+ Nb 0.0 0.0 0.0
+
+K_POINTS {automatic}
+ 12 12 12 0 0 0

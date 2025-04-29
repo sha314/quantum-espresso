@@ -1,0 +1,7 @@
+&BANDS
+    prefix   = 'nb_bulk'
+    outdir   = './tmp'
+    filband  = 'bands.dat'
+    lsym     = .true.     ! Key for correct k-path normalization
+/
+

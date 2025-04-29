@@ -1,0 +1,33 @@
+&CONTROL
+    calculation = 'bands',
+    prefix = 'nb_bulk',
+    outdir = './tmp/',
+    verbosity = 'high'
+/
+&SYSTEM
+    ibrav = 3,
+    a = 3.30,
+    nat = 1,
+    ntyp = 1,
+    ecutwfc = 50.0,
+    ecutrho = 400.0,
+    nbnd = 20
+/
+&ELECTRONS
+    conv_thr = 1.0d-8,
+    diagonalization = 'david'
+/
+ATOMIC_SPECIES
+ Nb  92.90638  Nb.pbe-spn-kjpaw_psl.1.0.0.UPF
+
+ATOMIC_POSITIONS {crystal}
+ Nb 0.0 0.0 0.0
+
+K_POINTS {crystal_b}  ! BCC high-symmetry path
+6                    ! 10 points between each pair
+0.0 0.0 0.0   40 ! Γ
+0.5 0.5 0.5   40 ! H
+0.0 0.5 0.0   40 ! N
+0.0 0.0 0.0   40 ! Γ
+0.5 0.0 0.0   40 ! P
+0.5 0.5 0.5   40 ! H

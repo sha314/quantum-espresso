@@ -35,13 +35,19 @@ mpirun -np $NPROC "$BIN_DIR/pw.x" -in "${INPUT_DIR}/nscf.in" > "${OUTPUT_DIR}/ns
 echo "bands : Current time: $(date +"%T")"
 mpirun -np $NPROC "$BIN_DIR/pw.x" -in "${INPUT_DIR}/bands.in" > "${OUTPUT_DIR}/bands.out"
 
-# === POST-PROCESSING ===
+# === POST-PROCESSING for Bands ===
 # you use bands.pp.in with bands.x to post-process the data and extract eigenvalues, suitable for plotting.
 echo "bands post processing : Current time: $(date +"%T")"
 mpirun -np $NPROC "$BIN_DIR/bands.x" -in "${INPUT_DIR}/bands.pp.in" > "${OUTPUT_DIR}/bands_post.out"
 
+
+# === Must run NSCF again for DOS, since bands may rewrite data ===
+echo "NSCF : Current time: $(date +"%T")"
+mpirun -np $NPROC "$BIN_DIR/pw.x" -in "${INPUT_DIR}/nscf.in" > "${OUTPUT_DIR}/nscf.out"
+
+# === POST-PROCESSING for DOS ===
 echo "dos post processing : Current time: $(date +"%T")"
-mpirun -np $NPROC "$BIN_DIR/dos.x" -in "${INPUT_DIR}/dos.in" > "${OUTPUT_DIR}/dos_post.out"
+mpirun -np $NPROC "$BIN_DIR/dos.x" -in "${INPUT_DIR}/dos.pp.in" > "${OUTPUT_DIR}/dos_post.out"
 
 echo "Current time: $(date +"%T")"
 echo ">>> All calculations complete!"

@@ -1,0 +1,26 @@
+&CONTROL
+    calculation = 'nscf',
+    prefix = 'nb_bulk',
+    outdir = './tmp/'   ! Must match SCF's outdir
+/
+&SYSTEM
+    ibrav = 3,
+    a = 3.30,
+    nat = 1,
+    ntyp = 1,
+    ecutwfc = 50.0,
+    ecutrho = 400.0,
+    occupations = 'tetrahedra',  ! Critical for metals
+    nbnd = 20                   ! Include extra bands
+/
+&ELECTRONS
+    conv_thr = 1.0d-8
+/
+ATOMIC_SPECIES
+ Nb  92.90638  Nb.pbe-spn-kjpaw_psl.1.0.0.UPF
+
+ATOMIC_POSITIONS {crystal}
+ Nb 0.0 0.0 0.0
+
+K_POINTS {automatic}
+ 16 16 16 0 0 0   ! Denser than SCF
