@@ -69,6 +69,7 @@ mpirun -np 4 dos.x -in si_dos.in > si_dos.out
 If you use GPU then you should use "-np 1" or "-n 1"
 
 
+Or you can use the script 'script_qe.sh' to run commands sequentially
 
 
 ## Exploring calculated files
@@ -81,3 +82,7 @@ gnuplot plot_bands.gp
  
 
 
+## Fermi energy
+```bat
+cat scf.out | grep energy
+```

@@ -3,12 +3,14 @@ set terminal pngcairo enhanced font "Arial,12" size 1200,800
 set output 'band_structure.png'
 
 # Title and labels
-set title "Silicon Band Structure"
+set title "Band Structure"
 set xlabel "k-path"
 set ylabel "Energy (eV)"
 
+set yrange [-5:9]
+
 # Fermi energy (replace 6.123 with your value)
-Ef = 6.123
+Ef = 17.7746 
 FILE_NAME="bands.dat.gnu"
 
 

@@ -24,28 +24,24 @@ NPROC=1                                      # Number of MPI processes. Keep it 
 export ESPRESSO_PSEUDO=$PSEUDO_DIR
 mkdir -p "$TMP_DIR" "$OUTPUT_DIR"
 
-# === FUNCTION TO RUN QE ===
-run_qe() {
-    stage=$1
-    infile="${INPUT_DIR}/${stage}.in"
-    outfile="${OUTPUT_DIR}/${stage}.out"
-    echo ">>> Running $stage ..."
-    mpirun -np $NPROC "$BIN_DIR/pw.x" -in "$infile" > "$outfile"
-}
 
 # === WORKFLOW ===
-run_qe scf
-run_qe nscf
-run_qe bands
+echo "SCF : Current time: $(date +"%T")"
+mpirun -np $NPROC "$BIN_DIR/pw.x" -in "${INPUT_DIR}/scf.in" > "${OUTPUT_DIR}/scf.out"
+
+echo "NSCF : Current time: $(date +"%T")"
+mpirun -np $NPROC "$BIN_DIR/pw.x" -in "${INPUT_DIR}/nscf.in" > "${OUTPUT_DIR}/nscf.out"
+
+echo "bands : Current time: $(date +"%T")"
+mpirun -np $NPROC "$BIN_DIR/pw.x" -in "${INPUT_DIR}/bands.in" > "${OUTPUT_DIR}/bands.out"
 
 # === POST-PROCESSING ===
-
-# After running the bands calculation (bands.in with pw.x), 
 # you use bands.pp.in with bands.x to post-process the data and extract eigenvalues, suitable for plotting.
-echo ">>> Running bands.x ..."
-mpirun -np $NPROC "$BIN_DIR/bands.x" -in "$INPUT_DIR/bands.pp.in" > "$OUTPUT_DIR/bands_post.out"
+echo "bands post processing : Current time: $(date +"%T")"
+mpirun -np $NPROC "$BIN_DIR/bands.x" -in "${INPUT_DIR}/bands.pp.in" > "${OUTPUT_DIR}/bands_post.out"
 
-echo ">>> Running dos.x ..."
-mpirun -np $NPROC "$BIN_DIR/dos.x" -in "$INPUT_DIR/dos.in" > "$OUTPUT_DIR/dos_post.out"
+echo "dos post processing : Current time: $(date +"%T")"
+mpirun -np $NPROC "$BIN_DIR/dos.x" -in "${INPUT_DIR}/dos.in" > "${OUTPUT_DIR}/dos_post.out"
 
+echo "Current time: $(date +"%T")"
 echo ">>> All calculations complete!"
