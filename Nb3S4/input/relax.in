@@ -1,0 +1,61 @@
+&control
+  calculation = 'relax',
+  prefix = 'nb3s4',
+  outdir = './tmp/',
+  wf_collect = .true.,
+  verbosity = 'high',
+  disk_io = 'low'
+  etot_conv_thr = 1.0d-4,
+  forc_conv_thr = 1.0d-3,
+  tprnfor = .true.,    ! Print forces on atoms
+  tstress = .true.,    ! Print the stress tensor (pressure, cell forces)
+/
+&system
+  ibrav = 0 
+  nat = 14
+  ntyp = 2
+  ecutwfc = 60
+  nbnd = 100
+  nspin = 1
+  nosym = .TRUE.
+  occupations = 'smearing' 
+  smearing = 'gauss' 
+  degauss = 0.01
+  nosym = .FALSE. ! If true, even symmetric k points will be computed
+/
+&electrons
+  conv_thr =  1.0d-8
+  mixing_beta = 0.3
+/
+&IONS
+  ion_dynamics = 'bfgs',
+/
+
+CELL_PARAMETERS angstrom
+  9.674663  0.000829  -0.000000
+  -4.838050  8.378091  0.000000
+  0.000000  -0.000000  3.409891
+
+ATOMIC_SPECIES
+  Nb 92.906  Nb.pbe-spn-kjpaw_psl.1.0.0.UPF
+  S 32.066  S.pbe-n-kjpaw_psl.1.0.0.UPF
+
+ATOMIC_POSITIONS {crystal}
+ Nb 0.5148378 0.8879313 0.7500000
+ Nb 0.6269066 0.5148378 0.2500000
+ Nb 0.8879313 0.3730934 0.2500000
+ Nb 0.1120687 0.6269066 0.7500000
+ Nb 0.3730934 0.4851622 0.7500000
+ Nb 0.4851622 0.1120687 0.2500000
+ S  0.6538858 0.7115408 0.7500000
+ S  0.9423460 0.6538858 0.2500000
+ S  0.7115408 0.0576540 0.2500000
+ S  0.2884592 0.9423460 0.7500000
+ S  0.0576540 0.3461142 0.7500000
+ S  0.3461142 0.2884592 0.2500000
+ S  0.3333330 0.6666670 0.2500000
+ S  0.6666670 0.3333330 0.7500000
+
+K_POINTS {automatic}
+  3 3 9 0 0 0
+  

@@ -1,0 +1,10 @@
+&DOS
+    prefix   = 'nb3s4'
+    outdir   = './tmp'
+    fildos   = 'dos.dat'
+    Emin     = -30.0
+    Emax     = 30.0
+    DeltaE   = 0.001
+    degauss  = 0.002
+    ngauss = 0 
+/

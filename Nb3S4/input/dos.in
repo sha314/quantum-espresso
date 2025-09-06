@@ -1,0 +1,10 @@
+&DOS
+    prefix   = 'silicon'
+    outdir   = './tmp'
+    fildos   = 'dos.dat'
+    Emin     = -30.0      ! Must be lowercase or uppercase consistently
+    Emax     = 30.0
+    DeltaE   = 0.005
+    degauss  = 0.005
+/
+

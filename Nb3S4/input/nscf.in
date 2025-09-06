@@ -1,0 +1,53 @@
+&control
+  calculation = 'nscf',
+  prefix = 'nb3s4',
+  restart_mode = 'restart',
+  outdir = './tmp/',
+  wf_collect = .true.,
+  verbosity = 'high',
+  disk_io = 'low'
+/
+&system
+  ibrav = 0 
+  nat = 14
+  ntyp = 2
+  ecutwfc = 60
+  nbnd = 100
+  nspin = 1
+  nosym = .TRUE.
+  ecutrho = 450.0,
+  degauss = 0.01,
+  occupations = 'tetrahedra',  ! Critical for metals
+  nosym = .FALSE. ! If true, even symmetric k points will be computed
+/
+&electrons
+  conv_thr =  1.0d-8
+  mixing_beta = 0.3
+/
+CELL_PARAMETERS angstrom
+  9.674663  0.000829  -0.000000
+  -4.838050  8.378091  0.000000
+  0.000000  -0.000000  3.409891
+
+ATOMIC_SPECIES
+  Nb 92.906  Nb.pbe-spn-kjpaw_psl.1.0.0.UPF
+  S 32.066  S.pbe-n-kjpaw_psl.1.0.0.UPF
+
+ATOMIC_POSITIONS (crystal)
+Nb               0.5137649642        0.8850031064        0.7500000000
+Nb               0.6287619588        0.5137649644        0.2500000000
+Nb               0.8850031054        0.3712380419        0.2500000000
+Nb               0.1149968946        0.6287619581        0.7500000000
+Nb               0.3712380412        0.4862350356        0.7500000000
+Nb               0.4862350358        0.1149968936        0.2500000000
+S                0.6524386328        0.7096546855        0.7500000000
+S                0.9427849479        0.6524386332        0.2500000000
+S                0.7096546848        0.0572150523        0.2500000000
+S                0.2903453152        0.9427849477        0.7500000000
+S                0.0572150521        0.3475613668        0.7500000000
+S                0.3475613672        0.2903453145        0.2500000000
+S                0.3333330000        0.6666670000        0.2500000000
+S                0.6666670000        0.3333330000        0.7500000000
+
+K_POINTS {automatic}
+  22 22 32 0 0 0
