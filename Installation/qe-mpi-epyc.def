@@ -1,0 +1,248 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author Juan_Quesada
+    Version 2.0
+    Description Quantum ESPRESSO optimized for AMD EPYC HPC clusters
+
+%environment
+
+    export PATH=/opt/openmpi/bin:/opt/miniconda/bin:/opt/qe/bin:/opt/openmpi/bin:$PATH
+    export OMP_NUM_THREADS=1
+    export OMPI_MCA_btl=self,vader,tcp
+    export OMPI_MCA_pml=ob1
+    export PATH=/opt/hdf5/bin:$PATH
+
+%post
+
+    export DEBIAN_FRONTEND=noninteractive
+cat >/etc/ld.so.conf.d/hpc-libs.conf <<EOF
+/opt/openmpi/lib
+/opt/openblas/lib
+/opt/fftw/lib
+/opt/scalapack/lib
+/opt/hdf5/lib
+EOF
+
+##################################################
+# System dependencies
+##################################################
+
+    apt-get update
+
+    apt-get install -y \
+        build-essential \
+        gfortran \
+        wget \
+        curl \
+        git \
+        cmake \
+        make \
+        perl \
+        python3 \
+        python3-pip \
+        libnuma-dev \
+        libhwloc-dev \
+        gnuplot \
+        vim \
+        nano \
+        ca-certificates
+
+##################################################
+# Global optimized compiler flags for EPYC
+##################################################
+
+    export CFLAGS="-O3 -march=znver2 -fPIC"
+    export FCFLAGS="-O3 -march=znver2 -fPIC -fallow-argument-mismatch"
+    export FFLAGS="$FCFLAGS"
+
+##################################################
+# OpenMPI (same toolchain for everything)
+##################################################
+
+    cd /tmp
+
+    wget https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.6.tar.gz
+
+    tar xf openmpi-4.1.6.tar.gz
+
+    cd openmpi-4.1.6
+
+    ./configure \
+        --prefix=/opt/openmpi \
+        --enable-mpi-fortran
+
+    make -j$(nproc)
+    make install
+
+    export PATH=/opt/openmpi/bin:$PATH
+
+    export CC=mpicc
+    export CXX=mpicxx
+    export FC=mpifort
+    echo /opt/openmpi/lib > /etc/ld.so.conf.d/openmpi.conf
+    ldconfig
+
+##################################################
+# OpenBLAS optimized for EPYC
+##################################################
+
+    cd /tmp
+
+    wget https://github.com/xianyi/OpenBLAS/archive/v0.3.26.tar.gz
+
+    tar xf v0.3.26.tar.gz
+
+    cd OpenBLAS-0.3.26
+
+    make -j$(nproc) \
+    CC=gcc \
+    FC=gfortran \
+    TARGET=ZEN \
+    USE_OPENMP=1 \
+    NO_MPI=1
+
+    make PREFIX=/opt/openblas install
+
+
+##################################################
+# FFTW3 MPI build
+##################################################
+
+    cd /tmp
+
+    wget https://www.fftw.org/fftw-3.3.10.tar.gz
+
+    tar xf fftw-3.3.10.tar.gz
+
+    cd fftw-3.3.10
+
+    ./configure \
+        --prefix=/opt/fftw \
+        --enable-mpi \
+        --enable-shared \
+        CC=mpicc
+
+    make -j$(nproc)
+
+    make install
+
+
+##################################################
+# ScaLAPACK (fixed version)
+##################################################
+
+    cd /tmp
+
+    wget https://github.com/Reference-ScaLAPACK/scalapack/archive/v2.2.1.tar.gz
+
+    tar xf v2.2.1.tar.gz
+
+    cd scalapack-2.2.1
+
+    mkdir build
+    cd build
+
+    cmake .. \
+    -DCMAKE_INSTALL_PREFIX=/opt/scalapack \
+    -DCMAKE_C_COMPILER=mpicc \
+    -DCMAKE_Fortran_COMPILER=mpifort \
+    -DBLAS_LIBRARIES=/opt/openblas/lib/libopenblas.so \
+    -DLAPACK_LIBRARIES=/opt/openblas/lib/libopenblas.so \
+    -DCMAKE_Fortran_FLAGS="$FCFLAGS"
+
+    make -j$(nproc)
+    make install
+
+
+##################################################
+# Parallel HDF5
+##################################################
+
+    cd /tmp
+
+    wget https://support.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.10.5.tar.gz
+
+    tar xf hdf5-1.10.5.tar.gz
+
+    cd hdf5-1.10.5
+
+    ./configure \
+        --prefix=/opt/hdf5 \
+        --enable-parallel \
+        --enable-shared \
+        CC=mpicc
+
+    make -j$(nproc)
+
+    make install
+
+
+##################################################
+# Quantum ESPRESSO build
+##################################################
+   cd /opt
+
+   git clone https://github.com/QEF/q-e.git
+   cd q-e
+
+   mkdir build
+   cd build
+
+   cmake .. \
+   -DCMAKE_INSTALL_PREFIX=/opt/qe \
+   -DCMAKE_C_COMPILER=mpicc \
+   -DCMAKE_Fortran_COMPILER=mpifort \
+   -DQE_ENABLE_MPI=ON \
+   -DBLAS_LIBRARIES=/opt/openblas/lib/libopenblas.so \
+   -DLAPACK_LIBRARIES=/opt/openblas/lib/libopenblas.so \
+   -DSCALAPACK_DIR=/opt/scalapack \
+   -DFFTW3_ROOT=/opt/fftw \
+   -DHDF5_ROOT=/opt/hdf5 \
+   -DHDF5_INCLUDE_DIRS=/opt/hdf5/include \
+   -DHDF5_LIBRARIES="/opt/hdf5/lib/libhdf5_fortran.so;/opt/hdf5/lib/libhdf5.so"
+
+   make -j$(nproc)
+   make install
+
+##################################################
+# Miniconda
+##################################################
+
+    cd /opt
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
+
+##################################################
+# VS Code server
+##################################################
+
+    mkdir -p /opt/vscode-server
+
+    cd /opt/vscode-server
+
+    wget https://update.code.visualstudio.com/latest/server-linux-x64/stable \
+        -O vscode-server.tar.gz
+
+    tar xf vscode-server.tar.gz --strip-components=1
+
+
+##################################################
+# Cleanup
+##################################################
+
+    rm -rf /tmp/openmpi*
+    rm -rf /tmp/OpenBLAS*
+    rm -rf /tmp/fftw*
+    rm -rf /tmp/scalapack*
+    rm -rf /tmp/hdf5*
+    rm -rf /tmp/vscode-server*
+    rm -rf /tmp/v*.tar.gz
+    rm -rf /tmp/*.tar.gz
+    apt-get clean
+
+
+%runscript
+
+    exec /opt/q-e/bin/pw.x "$@"

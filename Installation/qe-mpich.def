@@ -1,0 +1,266 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author Shahnoor_Rahman
+    Version 3.0
+    Description Quantum ESPRESSO with MPICH/Slurm support (APT-based build)
+
+%environment
+    # MPI and QE paths
+    export MPI_HOME=/opt/mpich
+    export PATH=$MPI_HOME/bin:/opt/qe/bin:/opt/hdf5/bin:/usr/bin:$PATH
+
+    # Library paths
+    export LD_LIBRARY_PATH=$MPI_HOME/lib:/opt/fftw/lib:/opt/openblas/lib:/opt/scalapack/lib:/opt/hdf5/lib:$LD_LIBRARY_PATH
+
+
+
+    # MPI/OpenMP settings
+    export OMP_NUM_THREADS=1
+    #export HYDRA_LAUNCH=slurm # unnecessary when launching jobs with srun and may interfere with scheduler integration.
+    export MPICH_VERSION_DISPLAY=1
+
+%post
+    set -e
+    export DEBIAN_FRONTEND=noninteractive
+
+    echo "=============================="
+    echo "Installing system dependencies"
+    echo "=============================="
+
+    apt-get update
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        gfortran \
+        git \
+        wget \
+        curl \
+        ca-certificates \
+        pkg-config \
+        make \
+        perl \
+        python3 \
+        python3-pip \
+        vim \
+        nano \
+        gnuplot \
+        libnuma-dev \
+        libhwloc-dev \
+        libnetcdf-dev \
+        libnetcdff-dev
+
+    update-ca-certificates
+
+
+    echo "/opt/mpich/lib" > /etc/ld.so.conf.d/mpich.conf
+    echo "/opt/fftw/lib" > /etc/ld.so.conf.d/fftw.conf
+    echo "/opt/openblas/lib" > /etc/ld.so.conf.d/openblas.conf
+    echo "/opt/scalapack/lib" > /etc/ld.so.conf.d/scalapack.conf
+    echo "/opt/hdf5/lib" > /etc/ld.so.conf.d/hdf5.conf
+    ldconfig
+
+
+    ##################################################
+    # Compiler optimizations for AMD EPYC
+    ##################################################
+    export CFLAGS="-O3 -march=znver2 -fPIC"
+    export FCFLAGS="-O3 -march=znver2 -fPIC -fallow-argument-mismatch"
+    
+
+    #export CFLAGS="-O3 -march=znver4 -fPIC"       # or -march=znver3 for Zen3 compatibility
+    #export FCFLAGS="-O3 -march=znver4 -fPIC -fallow-argument-mismatch"
+
+    export FFLAGS="$FCFLAGS"
+
+    ##################################################
+    # CMAKE 
+    ##################################################
+    cd /tmp
+    wget https://github.com/Kitware/CMake/releases/download/v3.28.4/cmake-3.28.4-linux-x86_64.tar.gz
+    tar xf cmake-3.28.4-linux-x86_64.tar.gz
+    mv cmake-3.28.4-linux-x86_64 /opt/cmake
+    ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+    ln -s /opt/cmake/bin/ctest /usr/local/bin/ctest
+
+
+
+    ##################################################
+    # MPICH 4.3.2 — MUST match host version exactly
+    ##################################################
+    cd /tmp
+    wget https://www.mpich.org/static/downloads/4.3.2/mpich-4.3.2.tar.gz
+    tar xf mpich-4.3.2.tar.gz
+    cd mpich-4.3.2
+
+
+
+    # Verify compiler works (optional but helpful for debugging)
+    gcc --version
+
+    ./configure \
+        --prefix=/opt/mpich \
+        --enable-fortran \
+        --enable-shared \
+        --enable-static=no \
+        CC=gcc \
+        CXX=g++ \
+        FC=gfortran
+
+    make -j$(nproc)
+    make install
+
+    export PATH=/opt/mpich/bin:$PATH
+    export CC=mpicc
+    export CXX=mpicxx
+    export FC=mpifort
+    ldconfig
+
+
+    ##################################################
+    # OpenBLAS for EPYC
+    ##################################################
+    cd /tmp
+    wget https://github.com/xianyi/OpenBLAS/archive/v0.3.26.tar.gz
+    tar xf v0.3.26.tar.gz
+    cd OpenBLAS-0.3.26
+    make -j$(nproc) CC=gcc FC=gfortran TARGET=ZEN USE_OPENMP=1 NO_MPI=1
+    make PREFIX=/opt/openblas install
+    ldconfig
+
+
+
+    ##################################################
+    # ScaLAPACK with MPICH
+    ##################################################
+    cd /tmp
+    wget https://github.com/Reference-ScaLAPACK/scalapack/archive/v2.2.1.tar.gz
+    tar xf v2.2.1.tar.gz
+    cd scalapack-2.2.1
+    mkdir build2 && cd build2
+    cmake .. \
+        -DCMAKE_INSTALL_PREFIX=/opt/scalapack \
+        -DCMAKE_C_COMPILER=mpicc \
+        -DCMAKE_Fortran_COMPILER=mpifort \
+        -DBLAS_LIBRARIES=/opt/openblas/lib/libopenblas.so \
+        -DLAPACK_LIBRARIES=/opt/openblas/lib/libopenblas.so \
+        -DCMAKE_Fortran_FLAGS="$FCFLAGS"
+    make -j$(nproc)
+    make install
+
+    
+
+
+
+    ##################################################
+    # FFTW3 with MPICH
+    ##################################################
+    cd /tmp
+    wget https://www.fftw.org/fftw-3.3.10.tar.gz
+    tar xf fftw-3.3.10.tar.gz
+    cd fftw-3.3.10
+    ./configure \
+        --prefix=/opt/fftw \
+        --enable-mpi \
+        --enable-shared \
+        --enable-sse2 \
+        --enable-avx \
+        --enable-avx2 \
+        CC=mpicc
+    make -j$(nproc)
+    make install
+
+
+
+
+    ##################################################
+    # Build Parallel HDF5 with MPICH
+    ##################################################
+    cd /tmp
+    git clone https://github.com/HDFGroup/hdf5.git
+    cd hdf5
+
+    git checkout hdf5_2.1.0
+    mkdir build && cd build
+
+    cmake .. \
+    -DCMAKE_INSTALL_PREFIX=/opt/hdf5 \
+    -DCMAKE_C_COMPILER=mpicc \
+    -DCMAKE_Fortran_COMPILER=mpifort \
+    -DHDF5_BUILD_FORTRAN=ON \
+    -DHDF5_ENABLE_PARALLEL=ON \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DHDF5_BUILD_CPP_LIB=OFF \
+    -DHDF5_BUILD_TOOLS=ON \
+    -DHDF5_BUILD_EXAMPLES=OFF \
+    -DBUILD_TESTING=OFF
+
+    make -j$(nproc)
+    make install
+    ldconfig
+
+
+
+
+    ##################################################
+    # Build Quantum ESPRESSO
+    ##################################################
+    echo "=============================="
+    echo "Building Quantum ESPRESSO"
+    echo "=============================="
+
+    cd /opt
+    git clone --depth 1 --branch qe-7.3.1 https://github.com/QEF/q-e.git
+    cd q-e
+    mkdir build && cd build
+
+    export CC=mpicc
+    export FC=mpifort
+
+
+
+   cmake .. \
+   -DCMAKE_INSTALL_PREFIX=/opt/qe \
+   -DCMAKE_C_COMPILER=mpicc \
+   -DCMAKE_Fortran_COMPILER=mpifort \
+   -DQE_ENABLE_MPI=ON \
+   -DBLAS_LIBRARIES=/opt/openblas/lib/libopenblas.so \
+   -DLAPACK_LIBRARIES=/opt/openblas/lib/libopenblas.so \
+   -DSCALAPACK_DIR=/opt/scalapack \
+   -DFFTW3_ROOT=/opt/fftw \
+   -DHDF5_ROOT=/opt/hdf5 \
+   -DHDF5_INCLUDE_DIRS=/opt/hdf5/include \
+   -DHDF5_LIBRARIES="/opt/hdf5/lib/libhdf5_fortran.so;/opt/hdf5/lib/libhdf5.so"
+
+
+    make -j$(nproc)
+    make install
+    ldconfig
+
+
+    ##################################################
+    # Cleanup
+    ##################################################
+    echo "Cleaning up..."
+    apt-get clean
+    
+    rm /tmp/*tar.gz
+    rm -rf /tmp/cmake*
+    rm -rf /tmp/mpich*
+    rm -rf /tmp/OpenBLAS*
+    rm -rf /tmp/scalapack*
+    rm -rf /tmp/fftw*
+    rm -rf /tmp/hdf5*
+    rm -rf /tmp/q-e*
+    
+
+
+%test
+    echo "Testing Quantum ESPRESSO installation..."
+    mpirun --version
+    ls -la /opt/qe/bin/
+    
+%runscript
+    exec "$@"
+
