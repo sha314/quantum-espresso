@@ -71,7 +71,10 @@ EOF
 
     ./configure \
         --prefix=/opt/openmpi \
-        --enable-mpi-fortran
+        --enable-mpi-fortran \
+        CC=gcc \
+        CXX=g++ \
+        FC=gfortran
 
     make -j$(nproc)
     make install
