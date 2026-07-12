@@ -1,0 +1,87 @@
+#%Module1.0#####################################################################
+## CPU-only Phoebe / Quantum ESPRESSO environment
+## Compiled with: GNU GCC/gfortran, OpenMPI 4.1.6, UCX 1.21.0, OpenBLAS 0.3.33,
+##               ScaLAPACK 2.2.3, FFTW 3.3.10, Parallel HDF5 2.1.0
+## Target: Zen 4 (x86_64), MPI+OpenMP, no GPU
+##
+
+proc ModulesHelp { } {
+    puts stderr "Phoebe Patched Quantum ESPRESSO 7.3 and Phoebe v1.1.0"
+    puts stderr "Environment compiled by GNU compilers for CPU only."
+    puts stderr ""
+    puts stderr "MPI: OpenMPI 4.1.6 (UCX PML, thread-multiple enabled)"
+    puts stderr "BLAS/LAPACK: OpenBLAS 0.3.33 (ZEN4, OpenMP)"
+    puts stderr "ScaLAPACK: 2.2.3 (shared)"
+    puts stderr "FFT: FFTW 3.3.10 (MPI, OpenMP)"
+    puts stderr "I/O: Parallel HDF5 2.1.0"
+}
+
+module-whatis "Phoebe Patched QE 7.3 + Phoebe v1.1.0 (GNU CPU)"
+
+# ------------------------------------------------------------------------------
+# UCX
+# ------------------------------------------------------------------------------
+setenv UCX_HOME /opt/ucx
+prepend-path PATH            $env(UCX_HOME)/bin
+prepend-path LD_LIBRARY_PATH $env(UCX_HOME)/lib
+
+# ------------------------------------------------------------------------------
+# OpenMPI
+# ------------------------------------------------------------------------------
+setenv MPI_HOME /opt/openmpi_gnu
+prepend-path PATH            $env(MPI_HOME)/bin
+prepend-path LD_LIBRARY_PATH $env(MPI_HOME)/lib
+
+# ------------------------------------------------------------------------------
+# Math Libraries (OpenBLAS, ScaLAPACK, FFTW)
+# ------------------------------------------------------------------------------
+prepend-path LD_LIBRARY_PATH /opt/openblas/lib64
+prepend-path LD_LIBRARY_PATH /opt/scalapack/lib64
+prepend-path LD_LIBRARY_PATH /opt/fftw/lib
+
+# ------------------------------------------------------------------------------
+# Parallel HDF5
+# ------------------------------------------------------------------------------
+setenv HDF5_HOME /opt/hdf5_2.1.0_gnu
+prepend-path PATH            $env(HDF5_HOME)/bin
+prepend-path LD_LIBRARY_PATH $env(HDF5_HOME)/lib
+
+# ------------------------------------------------------------------------------
+# Quantum ESPRESSO 7.3 (Phoebe patched)
+# ------------------------------------------------------------------------------
+setenv QE  /home/$env(USER)/Downloads/PHOEBE/phoebe-quantum-espresso
+setenv QEX $env(QE)/build_gnu_CPU/bin
+setenv EPW $env(QE)/build_gnu_CPU/EPW/bin
+
+prepend-path PATH $env(QEX)
+prepend-path PATH $env(EPW)
+
+# ------------------------------------------------------------------------------
+# Phoebe v1.1.0
+# ------------------------------------------------------------------------------
+setenv PHOEBE  /home/$env(USER)/Downloads/PHOEBE/phoebe
+setenv PHOEBEX $env(PHOEBE)/build_gnu_CPU
+
+prepend-path PATH $env(PHOEBEX)
+
+# ------------------------------------------------------------------------------
+# Runtime / MPI Tuning
+# ------------------------------------------------------------------------------
+setenv OMP_NUM_THREADS 1
+
+# Use UCX PML; let UCX handle intra-node (sm) and inter-node (tcp)
+setenv OMPI_MCA_pml ucx
+
+# CPU-only transports: shared memory, loopback, TCP
+# Remove or comment out 'tcp' if you only run single-node jobs
+setenv UCX_TLS self,sm,tcp
+
+# Uncomment ONLY if you have a Mellanox ConnectX IB card and mlx5_0 is up:
+# setenv UCX_NET_DEVICES mlx5_0:1
+
+# ------------------------------------------------------------------------------
+# Convenience aliases
+# ------------------------------------------------------------------------------
+setenv NPROC  32
+setenv NPOOL  32
+setenv NIMG   1

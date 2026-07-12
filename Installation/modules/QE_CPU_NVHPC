@@ -1,0 +1,42 @@
+#%Module1.0#####################################################################
+## CPU only Quantum ESPRESSO environment compiled with 
+## NVIDIA HPC SDK
+##
+
+proc ModulesHelp { } {
+    puts stderr "Loads NVIDIA HPC SDK 26.3 and Quantum ESPRESSO 7.5 environment"
+}
+
+module-whatis "NVHPC 26.3 + Quantum ESPRESSO 7.5 (CPU only)"
+
+# ------------------------------------------------------------------------------
+# NVIDIA HPC SDK
+# ------------------------------------------------------------------------------
+
+setenv NVHPC /opt/nvidia/hpc_sdk/Linux_x86_64/26.3
+
+prepend-path PATH            $env(NVHPC)/compilers/bin
+prepend-path PATH            $env(NVHPC)/comm_libs/mpi/bin
+
+prepend-path LD_LIBRARY_PATH $env(NVHPC)/compilers/lib
+prepend-path LD_LIBRARY_PATH $env(NVHPC)/cuda/lib64
+prepend-path LD_LIBRARY_PATH $env(NVHPC)/math_libs/lib64
+
+# ------------------------------------------------------------------------------
+# Quantum ESPRESSO
+# ------------------------------------------------------------------------------
+
+setenv QE  /home/$env(USER)/Downloads/q-e
+setenv QEX $env(QE)/build_NVHPC_CPU/bin
+setenv EPW $env(QE)/EPW/bin
+
+prepend-path PATH $env(QEX)
+
+# ------------------------------------------------------------------------------
+# Runtime settings
+# ------------------------------------------------------------------------------
+
+setenv OMP_NUM_THREADS 2
+setenv NPROC 30
+setenv NPOOL 30
+setenv NIMG 1

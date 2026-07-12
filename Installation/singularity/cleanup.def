@@ -1,0 +1,47 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author Shahnoor_Rahman
+    Version 0.1
+    Description Clean up tmp
+
+%environment
+    
+
+%post
+    set -e
+    export DEBIAN_FRONTEND=noninteractive
+
+    echo "=============================="
+    echo "Installing system dependencies"
+    echo "=============================="
+
+    apt-get update
+
+
+    ##################################################
+    # Cleanup
+    ##################################################
+    echo "Cleaning up..."
+    apt-get clean
+    
+    rm /tmp/*tar.gz
+    rm -rf /tmp/cmake*
+    rm -rf /tmp/mpich*
+    rm -rf /tmp/OpenBLAS*
+    rm -rf /tmp/scalapack*
+    rm -rf /tmp/fftw*
+    rm -rf /tmp/hdf5*
+    rm -rf /tmp/q-e*
+    
+
+
+%test
+    echo "Testing Quantum ESPRESSO installation..."
+    mpirun --version
+    ls -la /opt/qe/bin/
+    
+%runscript
+    exec "$@"
+
