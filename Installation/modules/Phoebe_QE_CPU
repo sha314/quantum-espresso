@@ -19,13 +19,6 @@ proc ModulesHelp { } {
 module-whatis "Phoebe Patched QE 7.3 + Phoebe v1.1.0 (GNU CPU)"
 
 # ------------------------------------------------------------------------------
-# UCX
-# ------------------------------------------------------------------------------
-setenv UCX_HOME /opt/ucx
-prepend-path PATH            $env(UCX_HOME)/bin
-prepend-path LD_LIBRARY_PATH $env(UCX_HOME)/lib
-
-# ------------------------------------------------------------------------------
 # OpenMPI
 # ------------------------------------------------------------------------------
 setenv MPI_HOME /opt/openmpi_gnu
@@ -67,14 +60,26 @@ prepend-path PATH $env(PHOEBEX)
 # ------------------------------------------------------------------------------
 # Runtime / MPI Tuning
 # ------------------------------------------------------------------------------
-setenv OMP_NUM_THREADS 1
+setenv OMP_NUM_THREADS 2
 
 # Use UCX PML; let UCX handle intra-node (sm) and inter-node (tcp)
-setenv OMPI_MCA_pml ucx
+# setenv OMPI_MCA_pml ucx
+
+# Use ob1 PML, no ucx for single cpu
+setenv OMPI_MCA_pml ob1
 
 # CPU-only transports: shared memory, loopback, TCP
 # Remove or comment out 'tcp' if you only run single-node jobs
-setenv UCX_TLS self,sm,tcp
+# setenv UCX_TLS self,sm,tcp
+
+# Transports: self (loopback), vader (fast shared memory), tcp (Ethernet fallback)
+setenv OMPI_MCA_btl self,vader,tcp
+
+# Vader shared memory settings for AMD Zen 4
+setenv OMPI_MCA_btl_vader_single_copy_mechanism cma
+
+# Disable UCX entirely to avoid any interference
+setenv OMPI_MCA_pml_ucx_priority 0
 
 # Uncomment ONLY if you have a Mellanox ConnectX IB card and mlx5_0 is up:
 # setenv UCX_NET_DEVICES mlx5_0:1

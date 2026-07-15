@@ -1,25 +1,22 @@
 #!/bin/bash
 
 ## CPU-only Phoebe / Quantum ESPRESSO environment
-## Compiled with: GNU GCC/gfortran, OpenMPI 4.1.6, UCX 1.21.0, OpenBLAS 0.3.33,
+## Compiled with: GNU GCC/gfortran, OpenMPI 4.1.6, OpenBLAS 0.3.33,
 ##               ScaLAPACK 2.2.3, FFTW 3.3.10, Parallel HDF5 2.1.0
 ## Target: Zen 4 (x86_64), MPI+OpenMP, no GPU
 ##
 
+
 conda deactivate # deactivate all conda env
 
 
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=24 # while building and set to suitable value while running
+echo "Number of threads will be used : "
+echo $(nproc)
 
 export OMPI_MCA_btl=self,vader,tcp
-export OMPI_MCA_pml=ucx
-export UCX_TLS=self,sm,tcp
-export UCX_NET_DEVICES=mlx5_0:1
+export OMPI_MCA_pml=ob1
 
-
-# UCX
-export PATH=/opt/ucx/bin:$PATH
-export LD_LIBRARY_PATH=/opt/ucx/lib:$LD_LIBRARY_PATH
 
 # MPI
 export PATH=/opt/openmpi_gnu/bin:$PATH
@@ -48,44 +45,7 @@ export PHOEBE=/home/$USER/Downloads/PHOEBE/phoebe
 export PHOEBEX=$PHOEBE/build_gnu_CPU
 
 
-##################################################
-### System software 
-##################################################
-
-
-sudo dnf install binutils-devel
-sudo dnf install libibverbs-devel rdma-core-devel
-sudo dnf install hwloc-devel libevent-devel
-
-
-sudo chown -R $USER:$USER /opt
-sudo chmod -R 755 /opt/
-
 export TEMPORARY=~/Downloads/PHOEBE
-
-##################################################
-# UCX 
-# To support, InfiniBand, RoCE, or plan to use AMD GPUs for GPU-aware MPI.
-##################################################
-
-cd $TEMPORARY
-
-wget https://github.com/openucx/ucx/archive/refs/tags/v1.21.0.tar.gz
-tar xf v1.21.0.tar.gz 
-cd ucx-1.21.0
-
-./autogen.sh
-./configure --prefix=/opt/ucx \
-    --enable-mt \
-    --without-go \
-    --disable-tests \
-    CC=gcc CXX=g++
-
-make -j$(nproc)
-make install
-
-
-
 
 
 ##################################################
@@ -99,11 +59,10 @@ tar xf openmpi-4.1.6.tar.gz
 cd openmpi-4.1.6
 
 ./configure --prefix=/opt/openmpi_gnu \
-    --with-ucx=/opt/ucx \
     --without-ucc \
     --enable-mpi-thread-multiple \
-    --enable-mpi-cxx \
     --enable-shared \
+    --enable-mpi-fortran \
     CC=gcc CXX=g++ FC=gfortran
 
 make -j$(nproc)
@@ -256,7 +215,6 @@ cmake .. \
     -DQE_ENABLE_MPI=ON \
     -DQE_ENABLE_SCALAPACK=ON \
     -DQE_ENABLE_HDF5=ON  \
-    -DQE_FFTW_VENDOR=Internal \
     -DHDF5_ROOT=/opt/hdf5_2.1.0_gnu
 
 make -j$(nproc)
@@ -286,8 +244,7 @@ cmake .. \
     -DKokkos_ENABLE_OPENMP=ON \
     -DHDF5_AVAIL=ON \
     -DBUILD_SHARED_LIBS=ON \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_EXE_LINKER_FLAGS="-lgfortran -lquadmath"
+    -DCMAKE_BUILD_TYPE=Release
 
 
 make -j$(nproc)
