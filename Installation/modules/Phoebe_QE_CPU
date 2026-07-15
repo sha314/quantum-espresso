@@ -45,9 +45,11 @@ prepend-path LD_LIBRARY_PATH $env(HDF5_HOME)/lib
 setenv QE  /home/$env(USER)/Downloads/PHOEBE/phoebe-quantum-espresso
 setenv QEX $env(QE)/build_gnu_CPU/bin
 setenv EPW $env(QE)/build_gnu_CPU/EPW/bin
+setenv QEU $env(QE)/external/wannier90/utility
 
 prepend-path PATH $env(QEX)
 prepend-path PATH $env(EPW)
+prepend-path PATH $env(QEU)
 
 # ------------------------------------------------------------------------------
 # Phoebe v1.1.0
